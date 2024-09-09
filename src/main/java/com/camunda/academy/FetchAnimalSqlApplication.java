@@ -2,20 +2,17 @@ package com.camunda.academy;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.time.Duration;
 import java.util.Properties;
 import java.util.Scanner;
 
-import com.camunda.academy.handler.OrderHandler;
-import com.camunda.academy.handler.PackItemsHandler;
-import com.camunda.academy.handler.ProcessPaymentHandler;
+import com.camunda.academy.handler.PictureInDatabaseHandler;
 
 import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.client.api.worker.JobWorker;
 import io.camunda.zeebe.client.impl.oauth.OAuthCredentialsProvider;
 import io.camunda.zeebe.client.impl.oauth.OAuthCredentialsProviderBuilder;
 
-public class OrderApplication {
+public class FetchAnimalSqlApplication {
 
 	// Zeebe Client Credentials
     private static final String ZEEBE_PROPERTIES_PATH = "src/main/resources/application.properties";
@@ -25,7 +22,7 @@ public class OrderApplication {
     private static String ZEEBE_TOKEN_AUDIENCE = "zeebe.camunda.io";  
 
 	// Process instance creation
-	private static final String PROCESS_ID = "orderProcess";	
+	private static final String PROCESS_ID = "fetchanimalSQL";	
 	private static final int NUM_INSTANCES = 1; // TOTAL NUMBER OF NEW PROCESS INSTANCES CREATED
 
 	// Worker configuration
@@ -47,30 +44,17 @@ public class OrderApplication {
 			// Process Instance creator looper
 			startProcessInstances(client, NUM_INSTANCES);
 
-			final JobWorker OrderWorker = client.newWorker()
-				.jobType("trackOrderStatus")
-				.handler(new OrderHandler())	
-				//.timeout(Duration.ofSeconds(WORKER_TIMEOUT).toMillis())			
-				.fetchVariables("order")
+			final JobWorker pictureInDatabaseWorker = client.newWorker()
+				.jobType("PictureInDatabaseHandler")
+				.handler(new PictureInDatabaseHandler())
 				.open();
-			
-			final JobWorker ProcessPaymentWorker = client.newWorker()
-				.jobType("processPayment")
-				.handler(new ProcessPaymentHandler())				
-                .open();
 		
-			final JobWorker PackItemsWorker = client.newWorker()
-				.jobType("packItems")
-				.handler(new PackItemsHandler())				
-				.open();
  			
 			// Terminate the worker with an Integer input
 			Scanner sc = new Scanner(System.in);			
 			sc.nextInt();
 			sc.close();
-			OrderWorker.close();
-			ProcessPaymentWorker.close();
-			PackItemsWorker.close();
+			pictureInDatabaseWorker.close();
 
 		} catch (Exception e) {
 			e.printStackTrace();
